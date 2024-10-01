@@ -9,6 +9,15 @@ const userRegistrationValidation = z.object({
   }),
 });
 
+const profileUpdateValidation = z.object({
+  body: z.object({
+    name: z.string(),
+    profilePicture: z.string(),
+    bio:z.string(),
+  }),
+})
+
 export const validateUserSchema = {
   userRegistrationValidation,
+  profileUpdateValidation
 };
