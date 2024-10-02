@@ -19,6 +19,7 @@ const getSingleUser = async (id:string) => {
   const userData = await UserModel.findById(id);
 
   const userPostedRecipeData = await RecipeModel.find({ user: id });
+  console.log(userPostedRecipeData)
 
   return { userData, userPostedRecipeData };
 }
@@ -100,6 +101,11 @@ await UserModel.findByIdAndUpdate(id,
 return updatedUser
 }
 
+const getUserInfo = async(id:string)=>{
+  const userData = await UserModel.findById(id);
+  return userData;
+}
+
 
 export const UserServices = {
   createUser,
@@ -107,4 +113,5 @@ export const UserServices = {
   getSingleUser,
   addToFollowing,
   removeFromFollowing,
+  getUserInfo,
 };
