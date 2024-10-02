@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema<TUser>(
       type: Boolean,
       default: false,
     },
+    transactionId: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
-import { UserServices } from './user.service';
 import sendResponse from '../../utils/sendResponse/sendResponse';
+import { UserServices } from './user.service';
 
 const createUser: RequestHandler = async (req, res, next) => {
   try {
@@ -26,7 +26,7 @@ const followUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.addToFollowing(req.params.id, req.user);
 
-    sendResponse(res, result, 'You Successfully Follow');
+    sendResponse(res, result, 'Successfully followed');
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ const unfollowUser: RequestHandler = async (req, res, next) => {
       req.user,
     );
 
-    sendResponse(res, result, 'You Successfully Unfollow');
+    sendResponse(res, result, 'Successfully Unfollowed');
   } catch (error) {
     next(error);
   }
@@ -49,12 +49,128 @@ const getSingleUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.getSingleUser(req.params.id);
 
-    sendResponse(res, result, 'Single User fetched successfully');
+    sendResponse(res, result, 'User fetched successfully');
   } catch (error) {
     next(error);
   }
 };
 
+const getUserInfo: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.getUserInfo(req.params.id);
+
+    sendResponse(res, result, 'Status fetched successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+const becomePremiumMember: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.becomePremiumMember(req.body);
+
+    sendResponse(res, result, 'Premium membership obtained successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+const paymentConfirmation: RequestHandler = async (req, res, next) => {
+  try {
+    const { transactionId } = req.query;
+
+    const result = await UserServices.paymentConfirmation(
+      transactionId as string,
+    );
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllUser: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.getAllUser();
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const blockUser: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.blockUser(req.params.id);
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const unblockUser: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.unblockUser(req.params.id);
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.deleteUser(req.params.id);
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.createAdmin(req.body);
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.getAllAdmin();
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.updateAdminProfile(
+      req.params.userId,
+      req.body,
+    );
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await UserServices.deleteAdmin(req.params.id);
+
+    res.send(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const UserControllers = {
   createUser,
@@ -62,4 +178,15 @@ export const UserControllers = {
   followUser,
   unfollowUser,
   getSingleUser,
+  getUserInfo,
+  becomePremiumMember,
+  paymentConfirmation,
+  getAllUser,
+  blockUser,
+  deleteUser,
+  unblockUser,
+  createAdmin,
+  getAllAdmin,
+  updateAdmin,
+  deleteAdmin,
 };

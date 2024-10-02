@@ -12,4 +12,8 @@ export default {
   access_token_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
   jwt_refresh_token_secret: process.env.JWT_REFRESH_SECRET,
   refresh_token_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
+  store_id: process.env.STORE_ID,
+  signature_key: process.env.SIGNATURE_KEY,
+  payment_url: process.env.PAYMENT_URL,
+  payment_verification_url: process.env.PAYMENT_VERIFICATION_URL,
 };

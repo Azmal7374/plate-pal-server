@@ -1,60 +1,60 @@
-import { JwtPayload } from "jsonwebtoken";
-import { TRecipe } from "./recipe.interface";
-import UserModel from "../user/user.model";
-import RecipeModel from "./recipe.model";
+import { JwtPayload } from 'jsonwebtoken';
+import { TRecipe } from './recipe.interface';
+import RecipeModel from './recipe.model';
+import UserModel from '../user/user.model';
 
-
-
-const createRecipe = async (payload:TRecipe, user:JwtPayload) =>{
+const createRecipe = async (payload: TRecipe, user: JwtPayload) => {
   const userRecord = await UserModel.findById(user.userId);
 
-  if(!userRecord){
-    throw new Error("User Not Found");
+  if (!userRecord) {
+    throw new Error('User not found');
   }
 
-  if(userRecord.isBlocked){
-    throw new Error("Your Account has Been Blocked")
+  if (userRecord.isBlocked) {
+    throw new Error('Your account has been blocked!');
   }
+
   payload.user = user.userId;
 
-  if(payload.isPremium){
-    payload.isPremium =true
+  if (payload.isPremium) {
+    payload.isPremium = true;
   }
 
-  const result = await  RecipeModel.create(payload)
+  const result = await RecipeModel.create(payload);
   return result;
+};
 
-}
+const upvoteRecipe = async (recipeId: string, user: JwtPayload) => {
+  const recipe = await RecipeModel.findById(recipeId);
 
+  if (!recipe) {
+    throw new Error('Recipe not found');
+  }
 
-const upvoteRecipe = async (recipeId:string, user: JwtPayload) => {
-const recipe = await RecipeModel.findById(recipeId)
-if(!recipe) {
- throw new Error("Recipe Not Found")
-}
-if(recipe.upvote.includes(user.userId)){
-  throw new Error("You have already voted recipe")
-}
+  if (recipe.upvote.includes(user.userId)) {
+    throw new Error('You have already upvoted this recipe');
+  }
 
-if(recipe.downvote.includes(user.userId)){
-  await RecipeModel.findByIdAndUpdate(
+  if (recipe.downvote.includes(user.userId)) {
+    await RecipeModel.findByIdAndUpdate(
+      recipeId,
+      {
+        $pull: { downvote: user.userId },
+      },
+      { new: true },
+    );
+  }
+
+  const updatedRecipe = await RecipeModel.findByIdAndUpdate(
     recipeId,
     {
-      $pull:{downvote:user.userId},
+      $addToSet: { upvote: user.userId }, 
     },
-    {new:true}
-  )
-}
-const updateRecipe = await RecipeModel.findByIdAndUpdate(
-  recipeId,
-  {
-    $addToSet:{upvote:user.userId}
-  },
-  {new:true}
-)
-return updateRecipe
-}
+    { new: true },
+  );
 
+  return updatedRecipe;
+};
 
 const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
   const recipe = await RecipeModel.findById(recipeId);
@@ -63,9 +63,7 @@ const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
     throw new Error('Recipe not found');
   }
 
-  let userHasUpvoted = false;
   if (recipe.upvote.includes(user.userId)) {
-    userHasUpvoted = true;
     await RecipeModel.findByIdAndUpdate(
       recipeId,
       {
@@ -75,10 +73,6 @@ const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
     );
   }
 
-  if (!userHasUpvoted && recipe.downvote.length === 0) {
-    throw new Error('Downvote is already zero.');
-  }
-
   if (recipe.downvote.includes(user.userId)) {
     throw new Error('You have already downvoted this recipe');
   }
@@ -86,54 +80,68 @@ const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
   const updatedRecipe = await RecipeModel.findByIdAndUpdate(
     recipeId,
     {
-      $addToSet: { downvote: user.userId },
+      $addToSet: { downvote: user.userId }, // $addToSet prevents duplicates
     },
     { new: true },
   );
+
   return updatedRecipe;
 };
 
-
-const  rateRecipe = async (recipeId: string, user:JwtPayload, newRating:number)=>{
+const rateRecipe = async (
+  recipeId: string,
+  user: JwtPayload,
+  newRating: number,
+) => {
   const recipe = await RecipeModel.findById(recipeId);
 
-  if(!recipe){
-    throw new Error("Recipe Not Found");
+  if (!recipe) {
+    throw new Error('Recipe not found');
   }
-  const existingRating = recipe.rating.findIndex((r)=>r.id === user.userId,
-);
 
-if(existingRating !==-1){
-  recipe.rating[existingRating].rating = newRating;
-}else{
-  recipe.rating.push({id:user.userId, rating:newRating})
-}
+  const existingRatingIndex = recipe.rating.findIndex(
+    (r) => r.id === user.userId,
+  );
 
-const updateRecipe = await recipe.save();
-return updateRecipe
-}
+  if (existingRatingIndex !== -1) {
+    recipe.rating[existingRatingIndex].rating = newRating;
+  } else {
+    recipe.rating.push({ id: user.userId, rating: newRating });
+  }
 
-const commentRecipe = async(recipeId:string, user:JwtPayload, comment:string) =>{
+  const updatedRecipe = await recipe.save();
+
+  return updatedRecipe;
+};
+
+const commentRecipe = async (
+  recipeId: string,
+  user: JwtPayload,
+  comment: string,
+) => {
   const recipe = await RecipeModel.findById(recipeId);
-  if(!recipe){
-    throw new Error("Recipe not found")
+
+  if (!recipe) {
+    throw new Error('Recipe not found');
   }
 
   recipe.comments.push({
-    id:user.userId,
-    name:user.name,
-    profilePicture:user.profilePicture,
-    comment:comment
-  })
-  const updateRecipe = await recipe.save();
-  return updateRecipe;
-}
+    id: user.userId,
+    name: user.name,
+    profilePicture: user.profilePicture,
+    comment: comment,
+  });
 
-const getAllRecipe = async ()=>{
-  const result = RecipeModel.find({ isPublished:false})
-  return result
-}
+  const updatedRecipe = await recipe.save();
 
+  return updatedRecipe;
+};
+
+const getAllRecipies = async () => {
+  const result = await RecipeModel.find({ isPublished: true });
+
+  return result;
+};
 
 const getSingleRecipe = async (id: string) => {
   const result = await RecipeModel.findById(id);
@@ -143,65 +151,72 @@ const getSingleRecipe = async (id: string) => {
   return { result, postOwner };
 };
 
-
-const deleteRecipe =async(recipeId: string)=>{
+const deleteRecipe = async (recipeId: string) => {
   const result = await RecipeModel.findByIdAndDelete(recipeId);
-  return  result
-}
 
-const editRecipeComment = async(recipeId: string, commentId:string, newComment: string) =>{
-const updateRecipe = await RecipeModel.findOneAndUpdate({
-  _id:recipeId,
-  'comments._id':commentId,
-},
-{
-  $set:{'comments.$.comment':newComment},
-},
-{new:true}
-);
+  return result;
+};
 
-if(!updateRecipe){
-  throw new Error('comment not found')
-}
-return updateRecipe
+const editRecipeComment = async (
+  recipeId: string,
+  commentId: string,
+  newCommentText: string,
+) => {
+  const updatedRecipe = await RecipeModel.findOneAndUpdate(
+    {
+      _id: recipeId,
+      'comments._id': commentId,
+    },
+    {
+      $set: { 'comments.$.comment': newCommentText },
+    },
+    { new: true },
+  );
 
-}
+  if (!updatedRecipe) {
+    throw new Error('Recipe or comment not found');
+  }
 
-const getAllRecipiesForAdmin = async()=>{
+  return updatedRecipe;
+};
+
+const getAllRecipiesForAdmin = async () => {
   const result = await RecipeModel.find();
-  return result
-}
 
-const unPublishRecipe = async(id:string)=>{
+  return result;
+};
+
+const unpublishRecipe = async (id: string) => {
   const recipe = await RecipeModel.findOneAndUpdate(
-    {_id:id},
-    {isPublished: false},
-    {new: true},
-    )
-    return recipe;
-}
+    { _id: id },
+    { isPublished: false },
+    { new: true },
+  );
 
-
-const  puslishRecipe = async(id:string)=>{
-  const recipe = await RecipeModel.findOneAndUpdate(
-    {_id:id},
-    {isPublished:true},
-    {new:true},
-  )
   return recipe;
-}
+};
 
-export const RecipeServices={
+const publishRecipe = async (id: string) => {
+  const recipe = await RecipeModel.findOneAndUpdate(
+    { _id: id },
+    { isPublished: true },
+    { new: true },
+  );
+
+  return recipe;
+};
+
+export const RecipeServices = {
   createRecipe,
   upvoteRecipe,
   downvoteRecipe,
   rateRecipe,
   commentRecipe,
   deleteRecipe,
-  getAllRecipe,
+  getAllRecipies,
   getSingleRecipe,
   editRecipeComment,
   getAllRecipiesForAdmin,
-  unPublishRecipe,
-  puslishRecipe,
-}
+  unpublishRecipe,
+  publishRecipe,
+};

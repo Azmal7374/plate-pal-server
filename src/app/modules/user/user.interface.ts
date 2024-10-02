@@ -9,4 +9,5 @@ export type TUser = {
   followers: string[];
   following: string[];
   isBlocked: boolean;
+  transactionId: string;
 };
