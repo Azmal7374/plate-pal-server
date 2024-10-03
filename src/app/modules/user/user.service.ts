@@ -417,6 +417,12 @@ const unblockUser = async (id: string) => {
 
 const deleteUser = async (id: string) => {
   
+  // Delete User's Recipes:
+  await RecipeModel.deleteMany({ user: id });
+
+  // Delete the User:
+  const user = await UserModel.findByIdAndDelete(id);
+  return user;
 };
 
 const createAdmin = async (payload: TUser) => {
