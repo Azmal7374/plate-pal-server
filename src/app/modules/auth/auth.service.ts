@@ -73,14 +73,19 @@ const changePassword = async (
       throw new Error("User not found")
    }
 
+    // Compare old password
    const matchPass = await bcrypt.compare(payload.oldPassword, user.password)
-   if(matchPass){
+     // Throw error if old password doesn't match
+   if(!matchPass){
       throw new Error("Password mismatch")
    }
 
+    // Hash the new password
    const newhasPass = await bcrypt.hash(payload.newPassword,
       Number(config.bcrypt_salt_rounds),
    );
+
+   // Update the user's password in the database
    await UserModel.findOneAndUpdate(
       {
          email:payload.email,

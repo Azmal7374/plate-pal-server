@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import { AuthServices } from './auth.service';
+import sendResponse from '../../utils/sendResponse/sendResponse';
 
 const login: RequestHandler = async (req, res, next) => {
   try {
@@ -17,6 +18,17 @@ const login: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+const changePassword: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await AuthServices.changePassword(req.body);
+
+    sendResponse(res, result, 'Change password Successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const AuthControllers = {
   login,
