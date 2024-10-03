@@ -66,7 +66,38 @@ return updatedRecipe;
 };
 
 const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
-  
+  // Find the Recipe:
+  const recipe = await RecipeModel.findById(recipeId);
+if (!recipe) {
+  throw new Error('Recipe not found');
+}
+
+// Handle Existing Upvote:
+if (recipe.upvote.includes(user.userId)) {
+  await RecipeModel.findByIdAndUpdate(
+    recipeId,
+    {
+      $pull: { upvote: user.userId },
+    },
+    { new: true },
+  );
+}
+
+// Check for Existing Downvote:
+if (recipe.downvote.includes(user.userId)) {
+  throw new Error('You have already downvoted this recipe');
+}
+
+// Add Downvote:
+const updatedRecipe = await RecipeModel.findByIdAndUpdate(
+  recipeId,
+  {
+    $addToSet: { downvote: user.userId },
+  },
+  { new: true },
+);
+return updatedRecipe;
+
 };
 
 const rateRecipe = async (
@@ -74,7 +105,31 @@ const rateRecipe = async (
   user: JwtPayload,
   newRating: number,
 ) => {
-  
+
+  // Find the Recipe:
+  const recipe = await RecipeModel.findById(recipeId);
+if (!recipe) {
+  throw new Error('Recipe not found');
+}
+
+// Check for Existing Rating:
+const existingRatingIndex = recipe.rating.findIndex(
+  (rate) => rate.id === user.userId,
+);
+
+// Update or Add Rating
+if (existingRatingIndex !== -1) {
+  recipe.rating[existingRatingIndex].rating = newRating;
+} else {
+  recipe.rating.push({ id: user.userId, rating: newRating });
+}
+
+
+// Save the Updated Reci
+const updatedRecipe = await recipe.save();
+return updatedRecipe;
+
+
 };
 
 const commentRecipe = async (
