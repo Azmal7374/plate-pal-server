@@ -137,19 +137,46 @@ const commentRecipe = async (
   user: JwtPayload,
   comment: string,
 ) => {
-  
+  //find the recipe
+  const recipe = await RecipeModel.findById(recipeId);
+if (!recipe) {
+  throw new Error('Recipe not found');
+}
+
+//push a comments
+recipe.comments.push({
+  id: user.userId,
+  name: user.name,
+  profilePicture: user.profilePicture,
+  comment: comment,
+});
+
+
+//const updatedRecipe = await recipe.save();
+const updatedRecipe = await recipe.save()
+return updatedRecipe ;
+
 };
 
 const getAllRecipies = async () => {
-  ;
+  //find tje recipe
+  const result = await RecipeModel.find({isPublished:true})
+  return result;
 };
 
 const getSingleRecipe = async (id: string) => {
-  
+  //find recipe with id
+  const result = await RecipeModel.findById(id)
+
+  //find post ownjer by user
+  const postOwner = await UserModel.findById(result?.user)
+  return {result, postOwner}
 };
 
 const deleteRecipe = async (recipeId: string) => {
- 
+ const result = await RecipeModel.findByIdAndDelete(recipeId)
+
+ return result ;
 };
 
 const editRecipeComment = async (
