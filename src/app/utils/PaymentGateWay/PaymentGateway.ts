@@ -13,7 +13,7 @@ export const initiatePayment = async (paymentData: any) => {
       cancel_url: 'http://localhost:3000',
       amount: '150',
       currency: 'BDT',
-      desc: 'Premium Membership Payment',
+      desc: 'Payment Gor Premium Memebership',
       cus_name: paymentData.custormerName,
       cus_email: paymentData.customerEmail,
       cus_add1: 'N/A',
