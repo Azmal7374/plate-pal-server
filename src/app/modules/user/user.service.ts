@@ -57,6 +57,26 @@ const addToFollowing = async (id: string, user: JwtPayload) => {
     throw new Error('Current user not found!');
   }
 
+  if(currentUser.following.includes(id)){
+    throw new Error('You are Already Follwing This User')
+  }
+
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    user.userId,
+    {
+      $addToSet:{following:id},
+    },
+    {new: true}
+  )
+
+  if(!updatedUser){
+    throw new Error('You failed to update following list')
+  }
+
+  await UserModel.findByIdAndUpdate(id,{
+    $addToSet:{followers:user.userId},
+  });
+  return updatedUser
  
 };
 
