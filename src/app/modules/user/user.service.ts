@@ -426,6 +426,20 @@ const deleteUser = async (id: string) => {
 };
 
 const createAdmin = async (payload: TUser) => {
+  // get exists user
+  const isUserAlreadyExists = await UserModel.findOne({ email: payload.email });
+
+  //check exists user
+  if (isUserAlreadyExists) {
+    throw new Error('Admin already exists!');
+  }
+
+  //set user role
+   payload.role = 'admin'
+
+   const result = await UserModel.create(payload);
+
+   return result;
   
 };
 
@@ -439,11 +453,28 @@ const updateAdminProfile = async (
   userId: string,
   updateData: Partial<TUser>,
 ) => {
+  // Find the User by ID:
   const user = await UserModel.findById(userId);
-
   if (!user) {
     throw new Error('User not found!');
   }
+
+  // Check for Email Conflict:
+  if(updateData.email){
+    const existingUser = await UserModel.findOne({ 
+      email: updateData.email
+    })
+    if(existingUser && existingUser.id.toString() !==userId){
+      throw new Error('Email is already in use')
+    }
+  }
+  // Update the User:
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData, {
+    new: true,
+  });
+
+  return updatedUser;
+
 
 };
 
