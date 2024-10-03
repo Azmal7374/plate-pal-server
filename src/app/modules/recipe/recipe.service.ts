@@ -184,7 +184,23 @@ const editRecipeComment = async (
   commentId: string,
   newCommentText: string,
 ) => {
+// Find and Update the Comment
+  const updatedRecipe = await RecipeModel.findOneAndUpdate(
+    {
+      _id: recipeId,
+      'comments._id': commentId,
+    },
+    {
+      $set: { 'comments.$.comment': newCommentText },
+    },
+    { new: true },
+  );
   
+
+  if(!updatedRecipe){
+    throw new Error('Recipe and comment not founded')
+  }
+  return updatedRecipe
 };
 
 const getAllRecipiesForAdmin = async () => {
