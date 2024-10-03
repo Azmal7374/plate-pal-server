@@ -389,16 +389,30 @@ const paymentConfirmation = async (transactionId: string) => {
 };
 
 const getAllUser = async () => {
+  // Fetching Users:
   const userData = await UserModel.find({ role: 'user' });
   return userData;
 };
 
 const blockUser = async (id: string) => {
-
+// Find and Update the User:
+const user = await UserModel.findOneAndUpdate(
+  {_id: id},
+  {isBlocked:true},
+  {new:true},
+)
+return user;
 };
 
 const unblockUser = async (id: string) => {
-  
+
+  // Find and Update the User:
+  const user = await UserModel.findOneAndUpdate(
+    {_id: id},
+    {isBlocked:false},
+    {new:true},
+  )
+  return user;
 };
 
 const deleteUser = async (id: string) => {
