@@ -51,16 +51,20 @@ const updateProfile = async (userId: string, updateData: Partial<TUser>) => {
 };
 
 const addToFollowing = async (id: string, user: JwtPayload) => {
+  // Fetching Current User:
   const currentUser = await UserModel.findById(user.userId);
 
+  // Check if Current User Exists:
   if (!currentUser) {
     throw new Error('Current user not found!');
   }
 
+// Check if Already Following:
   if(currentUser.following.includes(id)){
     throw new Error('You are Already Follwing This User')
   }
 
+//  Add User to Following List:
   const updatedUser = await UserModel.findByIdAndUpdate(
     user.userId,
     {
@@ -73,6 +77,7 @@ const addToFollowing = async (id: string, user: JwtPayload) => {
     throw new Error('You failed to update following list')
   }
 
+  // Update Followed User's Followers List:
   await UserModel.findByIdAndUpdate(id,{
     $addToSet:{followers:user.userId},
   });
@@ -83,11 +88,33 @@ const addToFollowing = async (id: string, user: JwtPayload) => {
 const removeFromFollowing = async (id: string, user: JwtPayload) => {
   const currentUser = await UserModel.findById(user.userId);
 
+  // Check if Current User Exists:
   if (!currentUser) {
     throw new Error('Current user not found!');
   }
 
+  // Check if Following the User:
+  if (!currentUser.following.includes(id)) {
+    throw new Error('You are not following this user.');
+  }
  
+  // Remove User from Following List:
+
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    user.userId,
+    {
+      $pull:{following:id}
+    },
+    {new:true},
+  )
+
+  // Update Followed User's Followers List:
+  await UserModel.findByIdAndUpdate(id,{
+    $pull:{followers:user.userId},
+  })
+
+  // Return Updated User:
+  return updatedUser;
 };
 
 const becomePremiumMember = async (payload: any) => {
