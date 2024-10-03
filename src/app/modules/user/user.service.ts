@@ -6,8 +6,10 @@ import { initiatePayment, verifyPayment } from '../../utils/PaymentGateWay/Payme
 
 
 const createUser = async (payload: TUser) => {
-  const isUserAlreadyExists = await UserModel.findOne({ email: payload.email });
 
+  //get exists user
+  const isUserAlreadyExists = await UserModel.findOne({ email: payload.email });
+//check user is already exists
   if (isUserAlreadyExists) {
     throw new Error('User already exists!');
   }
@@ -17,9 +19,13 @@ const createUser = async (payload: TUser) => {
 };
 
 const getSingleUser = async (id: string) => {
+  //find userData by id
   const userData = await UserModel.findById(id);
+
+  //find user post recipe data by id
   const userPostedRecipeData = await RecipeModel.find({ user: id });
 
+  //return both data 
   return { userData, userPostedRecipeData };
 };
 
