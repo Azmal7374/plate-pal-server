@@ -120,7 +120,27 @@ const removeFromFollowing = async (id: string, user: JwtPayload) => {
 const becomePremiumMember = async (payload: any) => {
   const user = await UserModel.findById(payload.id);
 
-  
+  if(user){
+    // Update the User's Transaction ID:
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      payload.id,
+      {transactionId:payload.transactionId},
+      {new:true},
+    )
+    // Check if the User was Updated:
+    if(!updatedUser){
+      throw new Error('Error updating user');
+    }
+// Initialize the Payment Process:
+    const initializePayment = await initiatePayment(payload);
+
+    // Return the Payment Initialization Result:
+    return initializePayment;
+  }
+  // Handle User Not Found:
+  else{
+    throw new Error('User Not Found')
+  }  
 };
 
 const paymentConfirmation = async (transactionId: string) => {
