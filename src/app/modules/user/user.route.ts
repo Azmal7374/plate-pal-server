@@ -31,7 +31,13 @@ router.get(
 
 router.get('/get-user-info/:id', auth('user'), UserControllers.getUserInfo);
 
+router.post(
+  '/become-premium-member',
+  auth('user'),
+  UserControllers.becomePremiumMember,
+);
 
+router.post('/confirmation', UserControllers.paymentConfirmation);
 
 router.get('/get-all-user', auth('admin'), UserControllers.getAllUser);
 
