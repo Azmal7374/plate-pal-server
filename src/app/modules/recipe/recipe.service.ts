@@ -30,7 +30,39 @@ return result
 };
 
 const upvoteRecipe = async (recipeId: string, user: JwtPayload) => {
- 
+//  Find the Recipe:
+const recipe = await RecipeModel.findById(recipeId);
+if (!recipe) {
+  throw new Error('Recipe not found');
+}
+
+// check for Existing Upvote:
+if (recipe.upvote.includes(user.userId)) {
+  throw new Error('You have already upvoted this recipe');
+}
+// Handle Downvote Cancellation:
+if (recipe.downvote.includes(user.userId)) {
+  await RecipeModel.findByIdAndUpdate(
+    recipeId,
+    {
+      $pull: { downvote: user.userId },
+    },
+    { new: true },
+  );
+}
+
+// Add Upvote:
+const updatedRecipe = await RecipeModel.findByIdAndUpdate(
+  recipeId,
+  {
+    $addToSet: { upvote: user.userId }, 
+  },
+  { new: true },
+);
+
+return updatedRecipe;
+
+
 };
 
 const downvoteRecipe = async (recipeId: string, user: JwtPayload) => {
