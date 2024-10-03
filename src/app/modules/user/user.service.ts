@@ -125,7 +125,6 @@ const removeFromFollowing = async (id: string, user: JwtPayload) => {
 
 const becomePremiumMember = async (payload: any) => {
   const user = await UserModel.findById(payload.id);
-
   if(user){
     // Update the User's Transaction ID:
     const updatedUser = await UserModel.findByIdAndUpdate(
@@ -150,7 +149,7 @@ const becomePremiumMember = async (payload: any) => {
 };
 
 const paymentConfirmation = async (transactionId: string) => {
-
+   console.log(transactionId)
   // Payment Verification:
   const verifyResponse = await verifyPayment(transactionId);
 

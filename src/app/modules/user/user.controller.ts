@@ -83,7 +83,7 @@ const paymentConfirmation: RequestHandler = async (req, res, next) => {
       transactionId as string,
     );
 
-    res.send(result);
+    sendResponse(res, result, 'Payment Confimation successfully');
   } catch (error) {
     next(error);
   }
@@ -93,7 +93,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.getAllUser();
 
-    res.send(result);
+    sendResponse(res, result, 'Get All user successfully');
   } catch (error) {
     next(error);
   }
@@ -103,7 +103,7 @@ const blockUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.blockUser(req.params.id);
 
-    res.send(result);
+    sendResponse(res, result, 'Block user By Admin successfully');
   } catch (error) {
     next(error);
   }
@@ -113,7 +113,8 @@ const unblockUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.unblockUser(req.params.id);
 
-    res.send(result);
+   
+    sendResponse(res, result, 'Unblock user By Admin successfully');
   } catch (error) {
     next(error);
   }
@@ -123,7 +124,7 @@ const deleteUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.deleteUser(req.params.id);
 
-    res.send(result);
+    sendResponse(res, result, 'Admin Deleted successfully');
   } catch (error) {
     next(error);
   }

@@ -78,7 +78,7 @@ const deleteRecipe: RequestHandler = async (req, res, next) => {
 
 const getAllRecipe: RequestHandler = async (req, res, next) => {
   try {
-    const result = await RecipeServices.getAllRecipe();
+    const result = await RecipeServices.getAllRecipies();
 
     sendResponse(res, result, 'Fetched Successfully');
   } catch (error) {
@@ -104,7 +104,7 @@ const updateCommentRecipe: RequestHandler = async (req, res, next) => {
       req.body.comment,
     );
 
-    sendResponse(res, result, 'Fetched Successfully');
+    sendResponse(res, result, 'Update Recipe comments Successfully');
   } catch (error) {
     next(error);
   }
@@ -122,7 +122,7 @@ const getAllRecipiesForAdmin: RequestHandler = async (req, res, next) => {
 
 const unpublishRecipe: RequestHandler = async (req, res, next) => {
   try {
-    const result = await RecipeServices.unPublishRecipe(req.params.id);
+    const result = await RecipeServices.unpublishRecipe(req.params.id);
 
     sendResponse(res, result, 'Unpublished Successfully');
   } catch (error) {
@@ -132,7 +132,7 @@ const unpublishRecipe: RequestHandler = async (req, res, next) => {
 
 const publishRecipe: RequestHandler = async (req, res, next) => {
   try {
-    const result = await RecipeServices.puslishRecipe(req.params.id);
+    const result = await RecipeServices.publishRecipe(req.params.id);
 
     sendResponse(res, result, 'Published Successfully');
   } catch (error) {
