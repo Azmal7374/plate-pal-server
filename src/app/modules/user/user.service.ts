@@ -144,6 +144,27 @@ const becomePremiumMember = async (payload: any) => {
 };
 
 const paymentConfirmation = async (transactionId: string) => {
+
+  // Payment Verification:
+  const verifyResponse = await verifyPayment(transactionId);
+
+  let result;
+  let message = '';
+
+  // Payment Status Check:
+  if (verifyResponse && verifyResponse.pay_status === 'Successful'){
+
+    // Updating User’s Premium Membership:
+    result = await UserModel.findByIdAndUpdate(
+      {transactionId},
+      {
+        premiumMembership: true
+      },
+    );
+    message ="Successfully paid"
+  }else{
+    message ="Payment Failed"
+  }
   
   let templateForSuccessfulPayment = `
    <html>
@@ -349,9 +370,22 @@ const paymentConfirmation = async (transactionId: string) => {
   </body>
 </html>
 
-  `;
+  `; 
 
- 
+  // Message Comparison for Payment Success:
+  if (message === 'Successfully Paid!') {
+    return (templateForSuccessfulPayment = templateForSuccessfulPayment.replace(
+      '{{message}}',
+      message,
+    ));
+  }
+
+  // Message Comparison for Payment Failure:
+  if (message === 'Payment Failed!') {
+    return templateForFailedPayment.replace('{{message}}', message);
+  }
+  
+  
 };
 
 const getAllUser = async () => {
