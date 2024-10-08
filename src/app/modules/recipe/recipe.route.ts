@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { RecipeControllers } from './recipe.controller';
 import auth from '../../middlewares/auth';

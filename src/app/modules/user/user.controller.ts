@@ -83,12 +83,11 @@ const paymentConfirmation: RequestHandler = async (req, res, next) => {
       transactionId as string,
     );
 
-    sendResponse(res, result, 'Payment Confimation successfully');
+    res.send(result);
   } catch (error) {
     next(error);
   }
 };
-
 const getAllUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.getAllUser();
@@ -113,7 +112,6 @@ const unblockUser: RequestHandler = async (req, res, next) => {
   try {
     const result = await UserServices.unblockUser(req.params.id);
 
-   
     sendResponse(res, result, 'Unblock user By Admin successfully');
   } catch (error) {
     next(error);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import { TUser } from './user.interface';
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema<TUser>(
       required: true,
     },
     premiumMembership: {
-      type: 'Boolean',
+      type: Boolean,
       default: false,
     },
     bio: {

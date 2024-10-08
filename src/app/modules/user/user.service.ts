@@ -1,15 +1,18 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { JwtPayload } from 'jsonwebtoken';
 import { TUser } from './user.interface';
 import UserModel from './user.model';
 import RecipeModel from '../recipe/recipe.model';
-import { initiatePayment, verifyPayment } from '../../utils/PaymentGateWay/PaymentGateway';
-
+import {
+  initiatePayment,
+  verifyPayment,
+} from '../../utils/PaymentGateWay/PaymentGateway';
 
 const createUser = async (payload: TUser) => {
-
   //get exists user
   const isUserAlreadyExists = await UserModel.findOne({ email: payload.email });
-//check user is already exists
+  //check user is already exists
   if (isUserAlreadyExists) {
     throw new Error('User already exists!');
   }
@@ -25,7 +28,7 @@ const getSingleUser = async (id: string) => {
   //find user post recipe data by id
   const userPostedRecipeData = await RecipeModel.find({ user: id });
 
-  //return both data 
+  //return both data
   return { userData, userPostedRecipeData };
 };
 
@@ -42,17 +45,16 @@ const updateProfile = async (userId: string, updateData: Partial<TUser>) => {
     throw new Error('User not found!');
   }
 
-  if(updateData.email){
-    const existingUser = await UserModel.findOne({email: updateData.email});
-    if(existingUser && existingUser._id.toString() !==userId){
-      throw new Error('Email Already in User!')
+  if (updateData.email) {
+    const existingUser = await UserModel.findOne({ email: updateData.email });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      throw new Error('Email Already in User!');
     }
   }
-   const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData,{
-    new:true,
-   })
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData, {
+    new: true,
+  });
 
-  
   return updatedUser;
 };
 
@@ -65,30 +67,29 @@ const addToFollowing = async (id: string, user: JwtPayload) => {
     throw new Error('Current user not found!');
   }
 
-// Check if Already Following:
-  if(currentUser.following.includes(id)){
-    throw new Error('You are Already Follwing This User')
+  // Check if Already Following:
+  if (currentUser.following.includes(id)) {
+    throw new Error('You are Already Follwing This User');
   }
 
-//  Add User to Following List:
+  //  Add User to Following List:
   const updatedUser = await UserModel.findByIdAndUpdate(
     user.userId,
     {
-      $addToSet:{following:id},
+      $addToSet: { following: id },
     },
-    {new: true}
-  )
+    { new: true },
+  );
 
-  if(!updatedUser){
-    throw new Error('You failed to update following list')
+  if (!updatedUser) {
+    throw new Error('You failed to update following list');
   }
 
   // Update Followed User's Followers List:
-  await UserModel.findByIdAndUpdate(id,{
-    $addToSet:{followers:user.userId},
+  await UserModel.findByIdAndUpdate(id, {
+    $addToSet: { followers: user.userId },
   });
-  return updatedUser
- 
+  return updatedUser;
 };
 
 const removeFromFollowing = async (id: string, user: JwtPayload) => {
@@ -103,21 +104,21 @@ const removeFromFollowing = async (id: string, user: JwtPayload) => {
   if (!currentUser.following.includes(id)) {
     throw new Error('You are not following this user.');
   }
- 
+
   // Remove User from Following List:
 
   const updatedUser = await UserModel.findByIdAndUpdate(
     user.userId,
     {
-      $pull:{following:id}
+      $pull: { following: id },
     },
-    {new:true},
-  )
+    { new: true },
+  );
 
   // Update Followed User's Followers List:
-  await UserModel.findByIdAndUpdate(id,{
-    $pull:{followers:user.userId},
-  })
+  await UserModel.findByIdAndUpdate(id, {
+    $pull: { followers: user.userId },
+  });
 
   // Return Updated User:
   return updatedUser;
@@ -125,52 +126,47 @@ const removeFromFollowing = async (id: string, user: JwtPayload) => {
 
 const becomePremiumMember = async (payload: any) => {
   const user = await UserModel.findById(payload.id);
-  if(user){
-    // Update the User's Transaction ID:
+
+  if (user) {
     const updatedUser = await UserModel.findByIdAndUpdate(
       payload.id,
-      {transactionId:payload.transactionId},
-      {new:true},
-    )
-    // Check if the User was Updated:
-    if(!updatedUser){
+      { transactionId: payload.transactionId },
+      { new: true },
+    );
+
+    if (!updatedUser) {
       throw new Error('Error updating user');
     }
-// Initialize the Payment Process:
+
     const initializePayment = await initiatePayment(payload);
 
-    // Return the Payment Initialization Result:
     return initializePayment;
+  } else {
+    throw new Error('User not found');
   }
-  // Handle User Not Found:
-  else{
-    throw new Error('User Not Found')
-  }  
 };
 
+
 const paymentConfirmation = async (transactionId: string) => {
-   console.log(transactionId)
-  // Payment Verification:
   const verifyResponse = await verifyPayment(transactionId);
 
   let result;
   let message = '';
 
-  // Payment Status Check:
-  if (verifyResponse && verifyResponse.pay_status === 'Successful'){
-
-    // Updating User’s Premium Membership:
-    result = await UserModel.findByIdAndUpdate(
-      {transactionId},
+  if (verifyResponse && verifyResponse.pay_status === 'Successful') {
+    result = await UserModel.findOneAndUpdate(
+      { transactionId },
       {
-        premiumMembership: true
+        premiumMembership: true,
       },
     );
-    message ="Successfully paid"
-  }else{
-    message ="Payment Failed"
+    message = 'Successfully Paid!';
+  } else {
+    message = 'Payment Failed!';
   }
-  
+
+  console.log(result);
+
   let templateForSuccessfulPayment = `
    <html>
   <head>
@@ -265,7 +261,7 @@ const paymentConfirmation = async (transactionId: string) => {
       </div>
       <h1>Payment Successful!</h1>
 
-      <button onclick="window.location.href='';">
+      <button onclick="window.location.href='https://cook-nest-client.vercel.app/dashboard';">
         Go To Your Dashboard
       </button>
     </div>
@@ -368,16 +364,15 @@ const paymentConfirmation = async (transactionId: string) => {
       </div>
       <h1>Payment Failed!</h1>
 
-      <button onclick="window.location.href='';">
+      <button onclick="window.location.href='https://cook-nest-client.vercel.app';">
         Go To Homepage
       </button>
     </div>
   </body>
 </html>
 
-  `; 
+  `;
 
-  // Message Comparison for Payment Success:
   if (message === 'Successfully Paid!') {
     return (templateForSuccessfulPayment = templateForSuccessfulPayment.replace(
       '{{message}}',
@@ -385,12 +380,9 @@ const paymentConfirmation = async (transactionId: string) => {
     ));
   }
 
-  // Message Comparison for Payment Failure:
   if (message === 'Payment Failed!') {
     return templateForFailedPayment.replace('{{message}}', message);
   }
-  
-  
 };
 
 const getAllUser = async () => {
@@ -400,28 +392,26 @@ const getAllUser = async () => {
 };
 
 const blockUser = async (id: string) => {
-// Find and Update the User:
-const user = await UserModel.findOneAndUpdate(
-  {_id: id},
-  {isBlocked:true},
-  {new:true},
-)
-return user;
+  // Find and Update the User:
+  const user = await UserModel.findOneAndUpdate(
+    { _id: id },
+    { isBlocked: true },
+    { new: true },
+  );
+  return user;
 };
 
 const unblockUser = async (id: string) => {
-
   // Find and Update the User:
   const user = await UserModel.findOneAndUpdate(
-    {_id: id},
-    {isBlocked:false},
-    {new:true},
-  )
+    { _id: id },
+    { isBlocked: false },
+    { new: true },
+  );
   return user;
 };
 
 const deleteUser = async (id: string) => {
-  
   // Delete User's Recipes:
   await RecipeModel.deleteMany({ user: id });
 
@@ -440,12 +430,11 @@ const createAdmin = async (payload: TUser) => {
   }
 
   //set user role
-   payload.role = 'admin'
+  payload.role = 'admin';
 
-   const result = await UserModel.create(payload);
+  const result = await UserModel.create(payload);
 
-   return result;
-  
+  return result;
 };
 
 const getAllAdmin = async () => {
@@ -465,12 +454,12 @@ const updateAdminProfile = async (
   }
 
   // Check for Email Conflict:
-  if(updateData.email){
-    const existingUser = await UserModel.findOne({ 
-      email: updateData.email
-    })
-    if(existingUser && existingUser.id.toString() !==userId){
-      throw new Error('Email is already in use')
+  if (updateData.email) {
+    const existingUser = await UserModel.findOne({
+      email: updateData.email,
+    });
+    if (existingUser && existingUser.id.toString() !== userId) {
+      throw new Error('Email is already in use');
     }
   }
   // Update the User:
@@ -479,8 +468,6 @@ const updateAdminProfile = async (
   });
 
   return updatedUser;
-
-
 };
 
 const deleteAdmin = async (id: string) => {

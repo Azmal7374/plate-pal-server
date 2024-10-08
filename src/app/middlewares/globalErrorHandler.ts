@@ -3,15 +3,14 @@
 import { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 import config from '../config';
-import AppError from '../errors/AppError';
 import handleCastError from '../errors/handleCastError';
 import handleDuplicateError from '../errors/handleDuplicateError';
 import handleValidationError from '../errors/handleValidationError';
 import handleZodError from '../errors/handleZodError';
 import { TErrorSources } from '../interface/error.interface';
 
-const globalErrorHandler: ErrorRequestHandler = (err,req, res, _next) => {
-  //setting default values
+const globalErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  // Default values for error response
   let statusCode = 500;
   let message = 'Something went wrong!';
   let errorSources: TErrorSources = [
@@ -21,6 +20,7 @@ const globalErrorHandler: ErrorRequestHandler = (err,req, res, _next) => {
     },
   ];
 
+  // Handle specific error types
   if (err instanceof ZodError) {
     const simplifiedError = handleZodError(err);
     statusCode = simplifiedError?.statusCode;
@@ -41,16 +41,8 @@ const globalErrorHandler: ErrorRequestHandler = (err,req, res, _next) => {
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
     errorSources = simplifiedError?.errorSources;
-  } else if (err instanceof AppError) {
-    statusCode = err?.statusCode;
-    message = err.message;
-    errorSources = [
-      {
-        path: '',
-        message: err?.message,
-      },
-    ];
-  } else if (err instanceof Error) {
+  }else if (err instanceof Error) {
+    // Handle generic errors
     message = err.message;
     errorSources = [
       {
@@ -60,25 +52,16 @@ const globalErrorHandler: ErrorRequestHandler = (err,req, res, _next) => {
     ];
   }
 
-  //ultimate return
-  return res.status(statusCode).json({
+  // Final error response
+  res.status(statusCode).json({
     success: false,
     message,
     errorSources,
     err,
     stack: config.NODE_ENV === 'development' ? err?.stack : null,
   });
+
+  // Make sure the function implicitly returns void
 };
 
 export default globalErrorHandler;
-
-//pattern
-/*
-success
-message
-errorSources:[
-  path:'',
-  message:''
-]
-stack
-*/

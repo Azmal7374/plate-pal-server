@@ -1,19 +1,22 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import config from '../../config';
 
 export const initiatePayment = async (paymentData: any) => {
+  console.log(paymentData)
   try {
     const response = await axios.post(config.payment_url as string, {
       store_id: config.store_id,
       signature_key: config.signature_key,
       tran_id: paymentData.transactionId,
-      success_url: `http://localhost:5000/api/v1/user/confirmation?transactionId=${paymentData.transactionId}&status=success`,
-      fail_url: `http://localhost:5000/api/v1/user/confirmation?status=failed`,
-      cancel_url: 'http://localhost:3000',
-      amount: '150',
+      success_url: `https://recipe-shareing-server.vercel.app/api/v1/user/confirmation?transactionId=${paymentData.transactionId}&status=success`,
+      fail_url: `https://recipe-shareing-server.vercel.app/api/v1/user/confirmation?status=failed`,
+      cancel_url: 'https://plate-pal-client.vercel.app',
+      amount: '200',
       currency: 'BDT',
-      desc: 'Payment Gor Premium Memebership',
+      desc: 'Payment For Premium Membership',
       cus_name: paymentData.custormerName,
       cus_email: paymentData.customerEmail,
       cus_add1: 'N/A',
