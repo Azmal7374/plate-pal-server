@@ -261,7 +261,7 @@ const paymentConfirmation = async (transactionId: string) => {
       </div>
       <h1>Payment Successful!</h1>
 
-      <button onclick="window.location.href='https://cook-nest-client.vercel.app/dashboard';">
+      <button onclick="window.location.href='https://https://plate-pal-client.vercel.app/dashboard';">
         Go To Your Dashboard
       </button>
     </div>
@@ -364,7 +364,7 @@ const paymentConfirmation = async (transactionId: string) => {
       </div>
       <h1>Payment Failed!</h1>
 
-      <button onclick="window.location.href='https://cook-nest-client.vercel.app';">
+      <button onclick="window.location.href='https://plate-pal-client.vercel.app/';">
         Go To Homepage
       </button>
     </div>
